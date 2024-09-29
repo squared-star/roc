@@ -1,3 +1,5 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
 use bumpalo::collections::{String, Vec};
 use bumpalo::Bump;
 use roc_module::called_via::{BinOp, UnaryOp};
@@ -393,6 +395,8 @@ impl<'a> Normalize<'a> for TypeDef<'a> {
 impl<'a> Normalize<'a> for ValueDef<'a> {
     fn normalize(&self, arena: &'a Bump) -> Self {
         use ValueDef::*;
+        #[cfg(feature = "2ltt")]
+        use ValueDef as V;
 
         match *self {
             Annotation(a, b) => Annotation(a.normalize(arena), b.normalize(arena)),
@@ -439,6 +443,9 @@ impl<'a> Normalize<'a> for ValueDef<'a> {
                 IngestedFileImport(ingested_file_import.normalize(arena))
             }
             Stmt(loc_expr) => Stmt(arena.alloc(loc_expr.normalize(arena))),
+
+            #[cfg(feature = "2ltt")]
+            V::Meta(meta) => V::Meta(meta.normalize(arena)),
         }
     }
 }
@@ -919,6 +926,10 @@ impl<'a> Normalize<'a> for TypeAnnotation<'a> {
             TypeAnnotation::SpaceBefore(a, _) => a.normalize(arena),
             TypeAnnotation::SpaceAfter(a, _) => a.normalize(arena),
             TypeAnnotation::Malformed(a) => TypeAnnotation::Malformed(a),
+            #[cfg(feature = "2ltt")]
+            TypeAnnotation::DependentFunction(dependent_function) => {
+                TypeAnnotation::DependentFunction(dependent_function.normalize(arena))
+            }
         }
     }
 }

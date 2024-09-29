@@ -1,3 +1,5 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
 use std::fmt::Debug;
 
 use crate::expr::merge_spaces;
@@ -5,6 +7,7 @@ use crate::header::{
     self, AppHeader, HostedHeader, ModuleHeader, ModuleName, PackageHeader, PlatformHeader,
 };
 use crate::ident::Accessor;
+use crate::meta::{DependentFunction, MetaDef};
 use crate::parser::ESingleQuote;
 use bumpalo::collections::{String, Vec};
 use bumpalo::Bump;
@@ -828,6 +831,10 @@ pub enum ValueDef<'a> {
     IngestedFileImport(IngestedFileImport<'a>),
 
     Stmt(&'a Loc<Expr<'a>>),
+
+    #[cfg(feature = "2ltt")]
+    /// Meta level definitions for the 2LTT support
+    Meta(MetaDef<'a>),
 }
 
 impl<'a> ValueDef<'a> {
@@ -1033,6 +1040,11 @@ impl<'a, 'b> Iterator for RecursiveValueDefIter<'a, 'b> {
                     match def {
                         ValueDef::Body(_, body) => self.push_pending_from_expr(&body.value),
 
+                        #[cfg(feature = "2ltt")]
+                        ValueDef::Meta(MetaDef::Body(_name, body)) => {
+                            self.push_pending_from_expr(&body.value); // TODO: check if this is correct
+                        }
+
                         ValueDef::AnnotatedBody {
                             ann_pattern: _,
                             ann_type: _,
@@ -1071,6 +1083,8 @@ impl<'a, 'b> Iterator for RecursiveValueDefIter<'a, 'b> {
                         }
                         ValueDef::Stmt(loc_expr) => self.push_pending_from_expr(&loc_expr.value),
                         ValueDef::Annotation(_, _) | ValueDef::IngestedFileImport(_) => {}
+                        #[cfg(feature = "2ltt")]
+                        ValueDef::Meta(MetaDef::Annotation(_, _)) => {}
                     }
 
                     self.index += 1;
@@ -1562,6 +1576,9 @@ pub enum TypeAnnotation<'a> {
 
     /// A malformed type annotation, which will code gen to a runtime error
     Malformed(&'a str),
+
+    #[cfg(feature = "2ltt")]
+    DependentFunction (DependentFunction<'a>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -2678,6 +2695,12 @@ impl<'a> Malformed for ValueDef<'a> {
             ValueDef::Annotation(pat, annotation) => {
                 pat.is_malformed() || annotation.is_malformed()
             }
+            #[cfg(feature = "2ltt")]
+            ValueDef::Meta(MetaDef::Annotation(_, annotation)) => annotation.is_malformed(),
+            
+            #[cfg(feature = "2ltt")]
+            ValueDef::Meta(MetaDef::Body(_, body)) => body.is_malformed(),
+
             ValueDef::Body(pat, expr) => pat.is_malformed() || expr.is_malformed(),
             ValueDef::AnnotatedBody {
                 ann_pattern,
@@ -2758,7 +2781,13 @@ impl<'a> Malformed for TypeAnnotation<'a> {
             TypeAnnotation::SpaceBefore(ty, _) | TypeAnnotation::SpaceAfter(ty, _) => {
                 ty.is_malformed()
             }
+
             TypeAnnotation::Malformed(_) => true,
+
+            #[cfg(feature = "2ltt")]
+            TypeAnnotation::DependentFunction(dependent_function) =>
+                dependent_function.is_malformed(),
+
         }
     }
 }

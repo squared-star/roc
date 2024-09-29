@@ -1,3 +1,5 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
 //! Implements the Roc parser, which transforms a textual representation of a
 //! Roc program to an [abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree).
 #![warn(clippy::dbg_macro)]
@@ -22,3 +24,4 @@ pub mod state;
 pub mod string_literal;
 pub mod test_helpers;
 pub mod type_annotation;
+pub mod meta;

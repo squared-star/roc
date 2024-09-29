@@ -8,7 +8,9 @@ license.workspace = true
 version.workspace = true
 
 [features]
+default = ["2ltt"]
 "parse_debug_trace" = []
+"2ltt" = []
 
 [dependencies]
 roc_collections = { path = "../collections" }
