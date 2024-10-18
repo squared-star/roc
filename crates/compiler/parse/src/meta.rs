@@ -137,7 +137,8 @@ fn chomp_italicized(buffer: &[u8]) -> Result<&str, Progress> {
     }
 }
 
-enum EDependentFunctionType<'a> {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EDependentFunctionType<'a> {
     Start(Position),
     Colon(Position),
     Arrow(Position),
@@ -146,11 +147,26 @@ enum EDependentFunctionType<'a> {
     ReturnType(EType<'a>, Position),
 }
 
+impl<'a> Normalize<'a> for EDependentFunctionType<'a> {
+    fn normalize(&self, _arena: &'a Bump) -> Self {
+        use EDependentFunctionType as E;
+        match self {
+            E::Start(_) => E::Start(Position::zero()),
+            E::Arrow(_) => E::Arrow(Position::zero()),
+            E::Colon(_) => E::Colon(Position::zero()),
+            E::ParameterName(_) => E::ParameterName(Position::zero()),
+            E::ParameterAnnotation(e, _) => E::ParameterAnnotation(e.normalize(_arena), Position::zero()),
+            E::ReturnType(e, _) => E::ReturnType(e.normalize(_arena), Position::zero()),
+        }
+    }
+}
+
+
 use crate::ident::unqualified_ident;
 use crate::parser::Progress::{MadeProgress, NoProgress};
 use crate::parser::{allocated, byte_indent, loc, succeed, word};
 use crate::type_annotation;
-fn parse_dependent_function<'a>(
+pub fn parse_dependent_function<'a>(
 ) -> impl Parser<'a, Loc<DependentFunction<'a>>, EDependentFunctionType<'a>> {
     skip_first(
         byte_indent(b'/', EDependentFunctionType::Start),

@@ -1,4 +1,11 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
+
 use crate::state::State;
+
+#[cfg(feature = "2ltt")]
+use crate::meta::EDependentFunctionType;
+
 use bumpalo::collections::vec::Vec;
 use bumpalo::Bump;
 use roc_region::all::{Loc, Position, Region};
@@ -637,6 +644,9 @@ pub enum EType<'a> {
     TIndentStart(Position),
     TIndentEnd(Position),
     TAsIndentStart(Position),
+
+    #[cfg(feature = "2ltt")]
+    TDependentFunctionType(&'a EDependentFunctionType<'a>, Position)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

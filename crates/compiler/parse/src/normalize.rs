@@ -1279,6 +1279,9 @@ impl<'a> Normalize<'a> for EType<'a> {
             EType::TInlineAlias(inner_err, _) => {
                 EType::TInlineAlias(inner_err.normalize(arena), Position::zero())
             }
+            #[cfg(feature = "2ltt")]
+            EType::TDependentFunctionType(inner_err, _) => EType::TDependentFunctionType(inner_err.normalize(arena), Position::zero()),
+            
             EType::TBadTypeVariable(_) => EType::TBadTypeVariable(Position::zero()),
             EType::TWildcard(_) => EType::TWildcard(Position::zero()),
             EType::TInferred(_) => EType::TInferred(Position::zero()),

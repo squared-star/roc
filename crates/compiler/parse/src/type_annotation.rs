@@ -580,7 +580,9 @@ fn expression<'a>(
     is_trailing_comma_valid: bool,
     stop_at_surface_has: bool,
 ) -> impl Parser<'a, Loc<TypeAnnotation<'a>>, EType<'a>> {
-    (move |arena, state: State<'a>, min_indent: u32| {
+    (one_of!(
+        specialize_err_ref(EType::TDependentFunctionType, map(crate::meta::parse_dependent_function(), |loc| loc.map_owned(TypeAnnotation::DependentFunction))),
+        move |arena, state: State<'a>, min_indent: u32| {
         let (p1, first, state) = space0_before_e(term(stop_at_surface_has), EType::TIndentStart)
             .parse(arena, state, min_indent)?;
 
@@ -685,7 +687,7 @@ fn expression<'a>(
                 Ok((progress, annot, state))
             }
         }
-    })
+    }))
     .trace("type_annotation:expression")
 }
 
