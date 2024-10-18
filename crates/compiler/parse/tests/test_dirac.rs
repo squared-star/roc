@@ -9,12 +9,26 @@ mod test_dirac {
     use roc_parse::ast;
 
     #[test]
+    fn test_unicode_implicitly_bound_type_variables() {
+        let arena = Bump::new();
+        let src =
+            r"
+            id : 𝐴 -> 𝐴
+            id = \ x -> x
+            ";
+        let state = State::new(&src.as_bytes());
+        let parsed = parse_module_defs(&arena, state, ast::Defs::default());
+        assert!(parsed.is_ok());
+        print!("{:?}", parsed);
+    }
+
+    #[test]
     fn test_implicit_dependent_function_types() {
         let arena = Bump::new();
         let src =
             r"
             meta
-            id : for A : Type. A -> A
+            id : 'A → A
             id = \ x -> x
             ";
 
@@ -23,15 +37,14 @@ mod test_dirac {
         assert!(parsed.is_ok());
 
     }
-    // id : a -> a
-    // id = \ x -> x
+    
     #[test]
     fn test_explicit_dependent_function_types() {
         let arena = Bump::new();
         let src =
             r"
             meta
-            id : A : Type -> A -> A
+            id : /^0 A : Type -> A -> A
             id = \ a, x -> x
             ";
 
@@ -41,6 +54,8 @@ mod test_dirac {
 
         
     }
+
+    #[test]
     fn test_meta_def() {
         let arena = Bump::new();
         let src =

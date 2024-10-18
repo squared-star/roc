@@ -1,3 +1,6 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
+
 use crate::ast::{
     AbilityImpls, AssignedField, CommentOrNewline, Expr, ImplementsAbilities, ImplementsAbility,
     ImplementsClause, Pattern, Spaceable, Spaced, Tag, TypeAnnotation, TypeHeader,
@@ -733,7 +736,7 @@ fn concrete_type<'a>() -> impl Parser<'a, TypeAnnotation<'a>, ETypeApply> {
 fn parse_type_variable<'a>(
     stop_at_surface_has: bool,
 ) -> impl Parser<'a, TypeAnnotation<'a>, EType<'a>> {
-    move |arena, state: State<'a>, min_indent: u32| match crate::ident::lowercase_ident().parse(
+    move |arena, state: State<'a>, min_indent: u32| match crate::meta::implicitly_bound_type_variable_ident().parse(
         arena,
         state.clone(),
         min_indent,

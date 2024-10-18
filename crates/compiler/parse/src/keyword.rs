@@ -1,3 +1,6 @@
+// Copyright © 2024 Squared Star
+// All rights reserved for contributions made by Squared Star.
+
 // These keywords are valid in expressions
 pub const IF: &str = "if";
 pub const THEN: &str = "then";
@@ -21,6 +24,9 @@ pub const WHERE: &str = "where";
 // These keywords are valid in headers
 pub const PLATFORM: &str = "platform";
 
-pub const KEYWORDS: [&str; 11] = [
-    IF, THEN, ELSE, WHEN, AS, IS, DBG, IMPORT, EXPECT, EXPECT_FX, CRASH,
+// These keywords are valid in value defs
+pub const META: &str = "meta";
+
+pub const KEYWORDS: [&str; 12] = [
+    IF, THEN, ELSE, WHEN, AS, IS, DBG, IMPORT, EXPECT, EXPECT_FX, CRASH, META,
 ];
